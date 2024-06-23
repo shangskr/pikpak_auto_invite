@@ -7,9 +7,9 @@ on:
       - '!.gitignore'
       - '!README.md'
   schedule:
-    # 每天早十点、晚六点十分各执行一次
-    - cron:  '10 10,18 * * *'
-
+    # 每隔两天运行一次，总计运行30次后停止
+    - cron: '0 2 */2 * *'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,3 +25,11 @@ jobs:
         env:
           INVITE_CODE: ${{secrets.INVITE_CODE}}
         run: python run.py
+      - name: Check if run count is within limit
+        run: |
+          if [ ${{ github.run_number }} -le 30 ]; then
+            echo "Continue with job execution."
+          else
+            echo "Reached maximum run count. Stopping further executions."
+            exit 0
+          fi
